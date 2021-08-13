@@ -24,7 +24,7 @@ Este proyecto se puede usar de 2 formas.
 
 Para cargar los datos se puede usar como CLI. Lo primero será crear la base de datos con el esquema disponible en [a relative link](covid_data/db/schema/db_schema.sql). La estructura de la base de datos es la siguiente:
 
-![Database ERD](assets/img/erd-covid.png)
+![Database ERD](https://github.com/alesanmed-educational-projects/covid-data/raw/main/assets/img/erd-covid.png)
 
 Una vez está creada la base de datos, se pueden cargar los datos de los archivos CSV con el siguiente comando:
 
