@@ -19,7 +19,7 @@ setup(
   author = 'alesanchez',                   # Type in your name
   author_email = 'hi@alesanchez.es',      # Type in your E-Mail
   url = 'https://github.com/alesanmed-educational-projects/core-data-covid-project',   # Provide either the link to your github or to your website
-  download_url = f'https://github.com/alesanmed-educational-projects/core-data-covid-project/archive/v_{__version__}.tar.gz',    # I explain this later on
+  download_url = f'https://github.com/alesanmed-educational-projects/covid-data/archive/refs/tags/v{__version__}.tar.gz',    # I explain this later on
   keywords = ['covid', 'core'],   # Keywords that define your package best
   install_requires=[            # I get to this in a second
       'pandas',
