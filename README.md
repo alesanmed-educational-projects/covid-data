@@ -5,6 +5,43 @@ Este proyecto contiene las herramientas necesarias para:
 - Cargar datos en esa base de datos
 - Consultar esos datos
 
+## Instalación
+
+### Biblioteca
+
+Para usarlo como biblioteca basta con instalarlo con `pip`
+
+```
+pip install covid-data
+```
+
+### CLI
+
+Lamentablmente, por el momento el CLI no funciona si se instala con `pip`. Para poder usar el CLI es necesario hacer `clone` del repositorio. Una ve lo tienes, instalar las dependencias:
+
+```
+pip install -r requirements.txt
+```
+
+Si usas [Poetry](https://python-poetry.org/) puedes instalar las dependencias con
+
+```
+poetry install
+```
+
+Es necesario instalar el propio paquete para que los imports funcionen:
+
+```
+pip install -e .
+```
+
+Una vez instaladas las dependencias, puedes usar el CLI
+
+```
+cd covid_data
+./covid_data --help
+```
+
 ## Opciones de configuración
 
 Este proyecto se vale de las siguientes variables de entorno para su configuración:
@@ -18,7 +55,7 @@ POSTGRES_DB:   Base de datos a la que conectarse
 CAGEDATA_API_KEY: Clave api de OpenCageData para enriquecer datos con localizaciones
 ```
 
-Este proyecto se puede usar de 2 formas.
+Ahora voy a detallar las formas de usar el proyecto
 
 ## Como CLI
 
@@ -29,13 +66,13 @@ Para cargar los datos se puede usar como CLI. Lo primero será crear la base de 
 Una vez está creada la base de datos, se pueden cargar los datos de los archivos CSV con el siguiente comando:
 
 ```bash
-python covid_data/app.py loadcsv /path/to/confirmed.csv,/path/to/dead.csv,/path/to/recovered.csv -tf -o
+./covid_data loadcsv /path/to/confirmed.csv,/path/to/dead.csv,/path/to/recovered.csv -tf -o
 ```
 
 Para obtener ayuda sobre cómo usar el comando, ejecuta:
 
 ```bash
-❯ python covid_data/app.py --help
+❯ ./covid_data --help
 Usage: app.py [OPTIONS] COMMAND [ARGS]...
 
 Options:
@@ -51,7 +88,7 @@ Hay 2 comandos disponibles
 ### loadcsv
 
 ```bash
-❯ python covid_data/app.py loadcsv --help
+❯ ./covid_data loadcsv --help
 Usage: app.py loadcsv [OPTIONS] FILES
 
   Loads FILES as CSV data. If you want to load several files, each file should
@@ -80,7 +117,7 @@ Por último, el argumento `--optimize` se saltará todas las filas en las que el
 Un ejemplo de uso de este comando para cargar los CSVs con todos los datos es:
 
 ```bash
-python covid_data/app.py loadcsv /path/to/confirmed.csv,/path/to/dead.csv,/path/to/recovered.csv -tf -o
+./covid_data loadcsv /path/to/confirmed.csv,/path/to/dead.csv,/path/to/recovered.csv -tf -o
 ```
 
 Usa el nombre del archivo para nombrar el tipo de caso y la optimización.
@@ -106,7 +143,7 @@ Options:
 Hay un argumento que es obligatorio y es el país a scrappear. Si se quiere saber qué países hay disponibles, basta con poner cualquier valor en `COUNTRY` y pasar el parámetro `--check`:
 
 ```bash
-❯ python covid_data/app.py scrap XXX --check
+❯ ./covid_data scrap XXX --check
 Available countries are:
         France
         Spain
@@ -115,7 +152,7 @@ Available countries are:
 Y, una vez se sabe qué país se va a usar, se lanza el scrapper:
 
 ```bash
-❯ python covid_data/app.py scrap spain
+❯ ./covid_data scrap spain
 Fetching cases for province 1/20
 Fetching cases for province 2/20
 Fetching cases for province 3/20
@@ -125,7 +162,7 @@ Fetching cases for province 3/20
 Se puede especificar la fecha de inicio usando el argumento `--start-date`. La fecha debe estar en formato `DD/MM/YYYY`
 
 ```bash
-python covid_data/app.py scrap France --start-date 01/08/2021
+./covid_data scrap France --start-date 01/08/2021
 ```
 
 ### **Añadir nuevos scrappers**
