@@ -2,6 +2,9 @@ import os
 import re
 from distutils.core import setup
 
+with open('README.md', 'r', encoding='utf-8') as fp:
+	long_description = fp.read()
+
 with open(os.path.join(os.path.dirname(__file__), "pyproject.toml"), "r") as f:
     project_info = f.read()
 
@@ -17,9 +20,10 @@ setup(
   version = __version__,
   license='The Unlicense',
   description = 'Data loader part of the mid-project for the Data Science bootcamp from Core Code School',
+  long_description=long_description,
   author = 'alesanchez',
   author_email = 'hi@alesanchez.es',
-  url = 'https://github.com/alesanmed-educational-projects/core-data-covid-project',
+  url = 'https://github.com/alesanmed-educational-projects/covid-data',
   download_url = download_url,
   keywords = ['covid', 'core'],
   install_requires=[
