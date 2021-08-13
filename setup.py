@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import find_packages, setup
 
 with open("README.md", "r", encoding="utf-8") as fp:
     long_description = fp.read()
@@ -11,7 +11,7 @@ download_url = "https://github.com/alesanmed-educational-projects/covid-data/arc
 
 setup(
     name="covid_data",
-    packages=["covid_data"],
+    packages=find_packages(),
     version=__version__,
     license="The Unlicense",
     description="Data loader part of the mid-project for the Data Science bootcamp from Core Code School",
