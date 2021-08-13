@@ -23,6 +23,7 @@ setup(
     license="The Unlicense",
     description="Data loader part of the mid-project for the Data Science bootcamp from Core Code School",
     long_description=long_description,
+    long_description_content_type="text/markdown",
     author="alesanchez",
     author_email="hi@alesanchez.es",
     url="https://github.com/alesanmed-educational-projects/covid-data",
