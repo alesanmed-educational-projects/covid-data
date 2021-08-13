@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 with open("README.md", "r", encoding="utf-8") as fp:
     long_description = fp.read()
 
-__version__ = "0.1.7"
+__version__ = "0.1.13"
 
 download_url = "https://github.com/alesanmed-educational-projects/covid-data/archive/refs/tags/{}.tar.gz".format(
     __version__
@@ -11,6 +11,7 @@ download_url = "https://github.com/alesanmed-educational-projects/covid-data/arc
 
 setup(
     name="covid_data",
+    scripts=["covid_data/covid_data"],
     packages=find_packages(),
     version=__version__,
     license="The Unlicense",

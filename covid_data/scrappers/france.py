@@ -6,14 +6,15 @@ import os
 import click
 import requests
 from click.exceptions import ClickException
+from psycopg2._psycopg import connection  # pylint: disable=no-name-in-module
+
 from covid_data.db import close_db, get_db
 from covid_data.db.queries import OnConflictStrategy, create_case
 from covid_data.logger import init_logger
 from covid_data.types import CaseType, PlaceType
 from covid_data.utils.places import create_country, create_province
-from psycopg2._psycopg import connection  # pylint: disable=no-name-in-module
 
-logger = logging.getLogger("covid-data")
+logger = logging.getLogger("covid_data")
 
 START_DATE = datetime.datetime(2020, 3, 2)
 
@@ -122,10 +123,7 @@ if __name__ == "__main__":
     from dotenv import load_dotenv
 
     load_dotenv()
-    init_logger(
-        os.path.join(os.path.dirname(__file__), "../../logs/covid_data.log"),
-        logging.INFO,
-    )
+    init_logger(logging.INFO)
     engine = get_db()
 
     try:

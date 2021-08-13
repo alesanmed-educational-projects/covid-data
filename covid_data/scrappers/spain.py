@@ -7,14 +7,15 @@ import click
 import requests
 from bs4 import BeautifulSoup
 from bs4.element import Tag
+from psycopg2._psycopg import connection  # pylint: disable=no-name-in-module
+
 from covid_data.db import close_db, get_db
 from covid_data.db.queries import create_case
 from covid_data.logger import init_logger
 from covid_data.types import CaseType, OnConflictStrategy
 from covid_data.utils.places import create_country, create_province
-from psycopg2._psycopg import connection  # pylint: disable=no-name-in-module
 
-logger = logging.getLogger("covid-data")
+logger = logging.getLogger("covid_data")
 
 START_DATE = datetime(2020, 3, 2)
 
@@ -103,10 +104,7 @@ if __name__ == "__main__":
 
     load_dotenv()
 
-    init_logger(
-        os.path.join(os.path.dirname(__file__), "../../logs/covid_data.log"),
-        logging.INFO,
-    )
+    init_logger(logging.INFO)
     engine = get_db()
 
     try:
