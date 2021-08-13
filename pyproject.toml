@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "core-data-covid-project"
-version = "0.1.2"
+version = "0.1.3"
 description = "Data loader part of the mid-project for the Data Science bootcamp from Core Code School"
 authors = ["Ale Sanchez <alesanchezmedina@gmail.com>"]
 license = "The Unlicense"
