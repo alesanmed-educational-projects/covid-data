@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 with open("README.md", "r", encoding="utf-8") as fp:
     long_description = fp.read()
 
-__version__ = "0.1.6"
+__version__ = "0.1.7"
 
 download_url = "https://github.com/alesanmed-educational-projects/covid-data/archive/refs/tags/{}.tar.gz".format(
     __version__
@@ -26,7 +26,6 @@ setup(
         "pandas",
         "beautifulsoup4",
         "click",
-        "python",
         "requests",
         "psycopg2",
         "Unidecode",
