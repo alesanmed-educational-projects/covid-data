@@ -1,17 +1,9 @@
-import os
-import re
-
 from setuptools import setup
 
 with open("README.md", "r", encoding="utf-8") as fp:
     long_description = fp.read()
 
-with open(os.path.join(os.path.dirname(__file__), "pyproject.toml"), "r") as f:
-    project_info = f.read()
-
-    regex = r"version = \"(.*)\""
-
-    __version__ = re.findall(regex, project_info)[0]
+__version__ = "0.1.4"
 
 download_url = "https://github.com/alesanmed-educational-projects/covid-data/archive/refs/tags/{}.tar.gz".format(
     __version__
