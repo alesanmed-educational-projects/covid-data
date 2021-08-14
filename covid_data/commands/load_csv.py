@@ -6,6 +6,7 @@ from logging import getLogger
 import click
 import pandas as pd
 from click.exceptions import ClickException
+
 from covid_data.db import close_db, get_db
 from covid_data.db.queries import (
     create_case,
@@ -167,7 +168,7 @@ def main(files: str, type: str = "", type_in_file: bool = True, optimize: bool =
 
     for type in types:
         if type not in {t.value for t in CaseType.__members__.values()}:
-            raise ClickException("Type {type} not valid")
+            raise ClickException(f"Type {type} not valid")
         types_fix.append(CaseType(type))
 
     for info in zip(file_paths, types_fix):
