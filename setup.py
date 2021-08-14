@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 with open("README.md", "r", encoding="utf-8") as fp:
     long_description = fp.read()
 
-__version__ = "0.1.13"
+__version__ = "0.1.14"
 
 download_url = "https://github.com/alesanmed-educational-projects/covid-data/archive/refs/tags/{}.tar.gz".format(
     __version__
