@@ -11,7 +11,11 @@ download_url = "https://github.com/alesanmed-educational-projects/covid-data/arc
 
 setup(
     name="covid_data",
-    scripts=["covid_data/covid_data"],
+    entry_points={
+        "console_scripts": [
+            "covid_data = covid_data:covid_data",
+        ],
+    },
     packages=find_packages(),
     version=__version__,
     license="The Unlicense",
