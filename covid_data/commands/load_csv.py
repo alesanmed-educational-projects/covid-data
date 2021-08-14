@@ -141,14 +141,14 @@ def insert_data(df: pd.DataFrame, case_type: CaseType, optimize: bool = True) ->
 @click.option(
     "-tf",
     "--type-in-file",
-    default=True,
+    default=False,
     help="Set this to true if the file names are <case_type>.csv Being <case_type> one of confirmed, recovered or dead",
     is_flag=True,
 )
 @click.option(
     "-o",
     "--optimize",
-    default=True,
+    default=False,
     help="Set to true to skip lines for places that has more cases than columns on the CSV",
     is_flag=True,
 )

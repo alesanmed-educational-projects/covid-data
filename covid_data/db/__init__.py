@@ -1,7 +1,7 @@
 import os
 from typing import Callable
 
-from psycopg2 import connect
+from psycopg2 import connect, extras
 from psycopg2._psycopg import connection  # pylint: disable=no-name-in-module
 
 from .queries import create_case, create_country, create_county, create_province
@@ -21,7 +21,8 @@ def get_db(
             f"{host or os.environ.get('POSTGRES_HOST', 'localhost')}"
             f":{port or os.environ.get('POSTGRES_PORT', '5432')}/"
             f"{db or os.environ.get('POSTGRES_DB', '')}"
-        )
+        ),
+        connection_factory=extras.RealDictConnection,
     )
 
 

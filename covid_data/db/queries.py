@@ -1,5 +1,9 @@
 from datetime import datetime
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
+
+from psycopg2 import sql
+from psycopg2._psycopg import connection  # pylint: disable=no-name-in-module
+from psycopg2._psycopg import cursor  # pylint: disable=no-name-in-module
 
 from covid_data.types import (
     Aggregations,
@@ -10,9 +14,6 @@ from covid_data.types import (
     PlaceTable,
     PlaceType,
 )
-from psycopg2 import sql
-from psycopg2._psycopg import connection  # pylint: disable=no-name-in-module
-from psycopg2._psycopg import cursor  # pylint: disable=no-name-in-module
 
 
 def place_exists(
@@ -28,12 +29,9 @@ def place_exists(
             (place,),
         )
 
-        result = cur.fetchone() or []
+        result: dict = cur.fetchone()  # type: ignore
 
-        if not len(result):
-            return None
-        else:
-            return result[0]
+        return result.get("id", None)
 
 
 def get_place_by_property(
@@ -60,14 +58,22 @@ def get_place_by_property(
             (value,),
         )
 
-        result = cur.fetchone() or []
+        res: dict = cur.fetchone()  # type: ignore
 
-        res = row_to_dict(result, from_table, engine)
+        return res
 
-        if not len(res):
-            return None
 
-        return res[0]
+def get_countries_id_by_alpha2(
+    alpha2_codes: list[str], engine: connection
+) -> list[int]:
+    with engine.cursor() as cur:
+        cur: cursor
+
+        query = sql.SQL("SELECT id FROM countries WHERE alpha2 IN %s")
+
+        cur.execute(query, (tuple(alpha2_codes),))
+
+        return [int(t["id"]) for t in cur.fetchall()]  # type: ignore
 
 
 def get_country_by_alpha2(country: str, engine: connection) -> Optional[dict]:
@@ -116,47 +122,6 @@ def get_county_by_id(county_id: str, engine: connection) -> Optional[dict]:
     return get_place_by_property(county_id, PlaceProperty.ID, engine, PlaceType.COUNTY)
 
 
-def row_to_dict(
-    rows: Iterable, table_or_cols: Union[str, Iterable[str]], engine: connection
-) -> list[dict]:
-    with engine.cursor() as cur:
-        cur: cursor
-
-        if type(table_or_cols) is str:
-            cur.execute(
-                (
-                    "SELECT column_name "
-                    'FROM information_schema."columns" '
-                    "WHERE table_name=%s"
-                    "ORDER BY ordinal_position"
-                ),
-                (table_or_cols,),
-            )
-
-            column_names = cur.fetchall()
-
-            column_names = [column[0] for column in column_names]
-        else:
-            column_names = table_or_cols
-
-        res: list[dict] = []
-
-        for row in ensure_array(rows):
-            mapped_row = {}
-            for i, column_name in enumerate(column_names):
-                mapped_row[column_name] = row[i]
-            res.append(mapped_row)
-
-        return res
-
-
-def ensure_array(element) -> List:
-    if not len(element):
-        return []
-
-    return element if isinstance(element[0], Iterable) else [element]
-
-
 def create_country(country: dict, engine: connection) -> str:
     with engine.cursor() as cur:
         cur: cursor
@@ -177,11 +142,11 @@ def create_country(country: dict, engine: connection) -> str:
             country,
         )
 
-        result = cur.fetchone()
+        result: dict = cur.fetchone()  # type: ignore
 
         engine.commit()
 
-        return result[0]
+        return result["id"]
 
 
 def create_province(province: dict, engine: connection) -> str:
@@ -202,11 +167,11 @@ def create_province(province: dict, engine: connection) -> str:
             province,
         )
 
-        result = cur.fetchone()
+        result: dict = cur.fetchone()  # type: ignore
 
         engine.commit()
 
-        return result[0]
+        return result["id"]
 
 
 def create_county(county: dict, engine: connection) -> str:
@@ -227,17 +192,17 @@ def create_county(county: dict, engine: connection) -> str:
             county,
         )
 
-        result = cur.fetchone()
+        result: dict = cur.fetchone()  # type: ignore
 
         engine.commit()
 
-        return result[0]
+        return result["id"]
 
 
 def get_cases_by_country(
     country_id: int, engine: connection, case_type: CaseType = None
 ) -> List[Dict]:
-    return get_cases_by_filters(engine, country_id=country_id, case_type=case_type)
+    return get_cases_by_filters(engine, countries_id=[country_id], case_type=case_type)
 
 
 def get_cases_by_province(
@@ -247,7 +212,7 @@ def get_cases_by_province(
 
 
 def get_cases_by_filters_query(
-    country_id: int = None,
+    countries_id: list[int] = None,
     province_id: int = None,
     date: datetime = None,
     date_lte: datetime = None,
@@ -260,45 +225,37 @@ def get_cases_by_filters_query(
     params = []
     constraints = []
 
-    columns = ["amount"]
     select = sql.SQL("SELECT ")
 
     if len(aggregation):
-        select += sql.SQL("sum(c.amount)")
+        select += sql.SQL("sum(c.amount) as amount")
         if Aggregations.DATE in aggregation:
             select += sql.SQL(", c.date")
-            columns.append("date")
         if Aggregations.COUNTRY in aggregation:
             select += sql.SQL(", co.name as country")
-            columns.append("country")
         if Aggregations.TYPE in aggregation:
             select += sql.SQL(", c.type")
-            columns.append("type")
         if Aggregations.PROVINCE in aggregation:
             select += sql.SQL(", p.name as province, p.code as province_code")
     else:
-        select += sql.SQL("c.amount, type, c.date, co.name")
-        columns.append("type")
-        columns.append("date")
-        columns.append("country")
+        select += sql.SQL("c.amount, type, c.date")
 
     from_ = sql.SQL("FROM cases c")
 
     query = sql.SQL("")
 
-    query += sql.SQL("INNER JOIN countries co ON c.country_id = co.id ")
+    if Aggregations.COUNTRY in aggregation:
+        query += sql.SQL("INNER JOIN countries co ON c.country_id = co.id ")
 
     if province_id:
         select += sql.SQL(",p.name as province, p.code as province_code")
 
     if province_id or Aggregations.PROVINCE in aggregation:
         query += sql.SQL("INNER JOIN provinces p ON c.province_id = p.id ")
-        columns.append("province")
-        columns.append("province_code")
 
-    if country_id:
-        constraints.append(sql.SQL("c.country_id=%s"))
-        params.append(country_id)
+    if countries_id:
+        constraints.append(sql.SQL("c.country_id IN %s"))
+        params.append(tuple(countries_id))
 
     if province_id:
         constraints.append(sql.SQL("c.province_id=%s"))
@@ -320,8 +277,9 @@ def get_cases_by_filters_query(
         constraints.append(sql.SQL("c.type=%s"))
         params.append(case_type.value)
 
-    if len(constraints):
-        query += sql.SQL(" WHERE ") + sql.SQL(" AND ").join(constraints)
+    constraints.append(sql.SQL("amount > 0"))
+
+    query += sql.SQL(" WHERE ") + sql.SQL(" AND ").join(constraints)
 
     if len(aggregation):
         query += sql.SQL(" GROUP BY ")
@@ -350,13 +308,12 @@ def get_cases_by_filters_query(
         "from": from_,
         "query": query,
         "params": tuple(params),
-        "columns": tuple(columns),
     }
 
 
 def get_cases_by_filters(
     engine: connection,
-    country_id: int = None,
+    countries_id: list[int] = None,
     province_id: int = None,
     date: datetime = None,
     date_lte: datetime = None,
@@ -370,7 +327,7 @@ def get_cases_by_filters(
         cur: cursor
 
         query = get_cases_by_filters_query(
-            country_id,
+            countries_id,
             province_id,
             date,
             date_lte,
@@ -382,12 +339,11 @@ def get_cases_by_filters(
         )
 
         params = query.pop("params")
-        columns = query.pop("columns")
 
         final_query = sql.SQL(" ").join([query[k] for k in query.keys()])
         cur.execute(final_query, params)
 
-        return row_to_dict(cur.fetchall(), columns, engine)
+        return cur.fetchall()  # type: ignore
 
 
 def get_cum_cases_by_date(
@@ -396,54 +352,53 @@ def get_cum_cases_by_date(
     date_lte: datetime = None,
     date_gte: datetime = None,
     case_type: CaseType = None,
+    countries: list[int] = None,
 ) -> List[Dict]:
-    columns = ["type", "amount", "date", "country"]
-
     params = []
 
     inner_query = sql.SQL(
         (
             "SELECT c.type as type, sum(c.amount) as amount, "
-            "c.date as date, co.name as country "
-            "FROM cases c INNER JOIN countries co ON c.country_id = co.id "
+            "c.date as date "
+            "FROM cases c"
         )
     )
 
+    constraints = []
+
     if date:
-        inner_query += sql.SQL("WHERE date=%s")
+        constraints.append(sql.SQL("date=%s"))
         params.append(date)
     elif date_gte or date_lte:
         if date_gte:
-            inner_query += sql.SQL("WHERE date>=%d")
+            constraints.append(sql.SQL("date>=%s"))
             params.append(date_gte)
 
         if date_lte:
-            if len(params):
-                inner_query += sql.SQL("AND ")
-            else:
-                inner_query += sql.SQL("WHERE ")
-
-            inner_query += sql.SQL("date<=%s")
+            constraints.append(sql.SQL("date<=%s"))
             params.append(date_lte)
 
-    if case_type:
-        if len(params):
-            inner_query += sql.SQL("AND ")
-        else:
-            inner_query += sql.SQL("WHERE ")
+    if countries:
+        constraints.append(sql.SQL("c.country_id IN %s"))
+        params.append(tuple(countries))
 
-        inner_query += sql.SQL("type=%s")
+    if case_type:
+        constraints.append(sql.SQL("type=%s"))
         params.append(case_type.value)
 
-    inner_query += sql.SQL(("GROUP BY c.date, c.type, co.name"))
+    constraints.append(sql.SQL("amount > 0"))
+
+    inner_query += sql.SQL(" WHERE ") + sql.SQL(" AND ").join(constraints)
+
+    inner_query += sql.SQL((" GROUP BY c.date, c.type"))
 
     outter_query = (
         sql.SQL(
             (
                 "SELECT "
                 "type, "
-                "sum(amount) OVER (PARTITION BY type, country ORDER BY date ASC), "
-                "date, country FROM ( "
+                "sum(amount) OVER (PARTITION BY type ORDER BY date ASC) as amount, "
+                "date FROM ( "
             )
         )
         + inner_query
@@ -455,7 +410,7 @@ def get_cum_cases_by_date(
 
         cur.execute(outter_query, tuple(params))
 
-        return row_to_dict(cur.fetchall(), columns, engine)
+        return cur.fetchall()  # type: ignore
 
 
 def get_cum_cases_by_date_country(
@@ -466,8 +421,6 @@ def get_cum_cases_by_date_country(
     date_gte: datetime = None,
     case_type: CaseType = None,
 ) -> List[Dict]:
-    columns = ["type", "amount", "date", "province"]
-
     params: list[Any] = [country_id]
 
     inner_query = sql.SQL(
@@ -479,30 +432,36 @@ def get_cum_cases_by_date_country(
         )
     )
 
+    constraints = []
+
     if date:
-        inner_query += sql.SQL("AND date=%s")
+        constraints.append(sql.SQL("date=%s"))
         params.append(date)
     elif date_gte or date_lte:
         if date_gte:
-            inner_query += sql.SQL("AND date>=%d")
+            constraints.append(sql.SQL("date>=%s"))
             params.append(date_gte)
 
         if date_lte:
-            inner_query += sql.SQL("AND date<=%s")
+            constraints.append(sql.SQL("date<=%s"))
             params.append(date_lte)
 
     if case_type:
-        inner_query += sql.SQL("AND type=%s")
+        constraints.append(sql.SQL("type=%s"))
         params.append(case_type.value)
 
-    inner_query += sql.SQL(("GROUP BY c.date, c.type, p.name"))
+    constraints.append(sql.SQL("amount > 0"))
+
+    inner_query += sql.SQL("AND ") + sql.SQL(" AND ").join(constraints)
+
+    inner_query += sql.SQL((" GROUP BY c.date, c.type, p.name"))
 
     outter_query = (
         sql.SQL(
             (
                 "SELECT "
                 "type, "
-                "sum(amount) OVER (PARTITION BY type, province ORDER BY date ASC), "
+                "sum(amount) OVER (PARTITION BY type, province ORDER BY date ASC) as amount, "
                 "date, province FROM ( "
             )
         )
@@ -515,7 +474,7 @@ def get_cum_cases_by_date_country(
 
         cur.execute(outter_query, tuple(params))
 
-        return row_to_dict(cur.fetchall(), columns, engine)
+        return cur.fetchall()  # type: ignore
 
 
 def get_cum_cases_by_country(
@@ -524,9 +483,8 @@ def get_cum_cases_by_country(
     date_lte: datetime = None,
     date_gte: datetime = None,
     case_type: CaseType = None,
+    countries_id: list[int] = [],
 ) -> List[Dict]:
-    columns = ["country", "amount", "date"]
-
     params = []
 
     inner_query = sql.SQL(
@@ -536,31 +494,31 @@ def get_cum_cases_by_country(
         )
     )
 
+    constraints = []
+
     if date:
-        inner_query += sql.SQL("WHERE date=%s")
+        constraints.append(sql.SQL("date=%s"))
         params.append(date)
     elif date_gte or date_lte:
         if date_gte:
-            inner_query += sql.SQL("WHERE date>=%d")
+            constraints.append(sql.SQL("date>=%s"))
             params.append(date_gte)
 
         if date_lte:
-            if len(params):
-                inner_query += sql.SQL("AND ")
-            else:
-                inner_query += sql.SQL("WHERE ")
-
-            inner_query += sql.SQL("date<=%s")
+            constraints.append(sql.SQL("date<=%s"))
             params.append(date_lte)
 
     if case_type:
-        if len(params):
-            inner_query += sql.SQL("AND ")
-        else:
-            inner_query += sql.SQL("WHERE ")
-
-        inner_query += sql.SQL("type=%s")
+        constraints.append(sql.SQL("type=%s"))
         params.append(case_type.value)
+
+    if len(countries_id):
+        constraints.append(sql.SQL("c.country_id IN %s"))
+        params.append(tuple(countries_id))
+
+    constraints.append(sql.SQL("amount > 0"))
+
+    inner_query += sql.SQL(" WHERE ") + sql.SQL(" AND ").join(constraints)
 
     inner_query += sql.SQL(("GROUP BY c.date, co.name"))
 
@@ -569,7 +527,7 @@ def get_cum_cases_by_country(
             (
                 "SELECT "
                 "country, "
-                "sum(amount) OVER (PARTITION BY country ORDER BY date ASC), "
+                "sum(amount) OVER (PARTITION BY country ORDER BY date ASC) as amount, "
                 "date FROM ( "
             )
         )
@@ -582,7 +540,7 @@ def get_cum_cases_by_country(
 
         cur.execute(outter_query, tuple(params))
 
-        return row_to_dict(cur.fetchall(), columns, engine)
+        return cur.fetchall()  # type: ignore
 
 
 def get_cum_cases_by_province(
@@ -593,42 +551,46 @@ def get_cum_cases_by_province(
     case_type: CaseType = None,
     country_id: int = None,
 ) -> List[Dict]:
-    columns = ["province", "amount", "date"]
-
     params: list[Any] = [country_id]
 
     inner_query = sql.SQL(
         (
             "SELECT p.name as province, sum(c.amount) as amount, c.date as date "
             "FROM cases c INNER JOIN provinces p ON c.province_id = p.id "
-            "WHERE c.country_id=%s"
+            "WHERE c.country_id=%s "
         )
     )
 
+    constraints = []
+
     if date:
-        inner_query += sql.SQL("AND date=%s")
+        constraints.append(sql.SQL("date=%s"))
         params.append(date)
     elif date_gte or date_lte:
         if date_gte:
-            inner_query += sql.SQL("AND date>=%d")
+            constraints.append(sql.SQL("date>=%s"))
             params.append(date_gte)
 
         if date_lte:
-            inner_query += sql.SQL("AND date<=%s")
+            constraints.append(sql.SQL("date<=%s"))
             params.append(date_lte)
 
     if case_type:
-        inner_query += sql.SQL("AND type=%s")
+        constraints.append(sql.SQL("type=%s"))
         params.append(case_type.value)
 
-    inner_query += sql.SQL(("GROUP BY c.date, p.name"))
+    constraints.append(sql.SQL("amount > 0"))
+
+    inner_query += sql.SQL("AND ") + sql.SQL(" AND ").join(constraints)
+
+    inner_query += sql.SQL((" GROUP BY c.date, p.name"))
 
     outter_query = (
         sql.SQL(
             (
                 "SELECT "
                 "province, "
-                "sum(amount) OVER (PARTITION BY province ORDER BY date ASC), "
+                "sum(amount) OVER (PARTITION BY province ORDER BY date ASC) as amount, "
                 "date FROM ( "
             )
         )
@@ -641,7 +603,7 @@ def get_cum_cases_by_province(
 
         cur.execute(outter_query, tuple(params))
 
-        return row_to_dict(cur.fetchall(), columns, engine)
+        return cur.fetchall()  # type: ignore
 
 
 def create_case(
@@ -698,7 +660,7 @@ def get_all_countries(
 
         cur.execute(query, params)
 
-        return row_to_dict(cur.fetchall(), "countries", engine)
+        return cur.fetchall()  # type: ignore
 
 
 def get_all_provinces(engine: connection) -> list[dict]:
@@ -718,11 +680,7 @@ def get_all_provinces(engine: connection) -> list[dict]:
             )
         )
 
-        return row_to_dict(
-            cur.fetchall(),
-            ["province", "province_id", "province_code", "country", "country_id"],
-            engine,
-        )
+        return cur.fetchall()  # type: ignore
 
 
 def get_provinces_by_country(engine: connection, country_id: int) -> list[dict]:
@@ -744,11 +702,7 @@ def get_provinces_by_country(engine: connection, country_id: int) -> list[dict]:
             (country_id,),
         )
 
-        return row_to_dict(
-            cur.fetchall(),
-            ["province", "province_id", "province_code", "country", "country_id"],
-            engine,
-        )
+        return cur.fetchall()  # type: ignore
 
 
 def insert_api_key(engine: connection, hashed_key: str) -> bool:
