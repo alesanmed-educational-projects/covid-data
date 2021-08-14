@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS countries (
 );
 CREATE INDEX idx_countries_alpha2 ON countries (alpha2);
 CREATE INDEX idx_countries_alpha3 ON countries (alpha3);
+CREATE INDEX idx_countries_name ON countries (name);
 CREATE INDEX idx_countries_geom ON countries USING GIST (geom);
 CREATE TABLE IF NOT EXISTS provinces (
 	id SERIAL PRIMARY KEY,
@@ -59,6 +60,8 @@ CREATE UNIQUE INDEX cases_unique_case ON cases (
 CREATE INDEX idx_cases_country ON cases (country_id);
 CREATE INDEX idx_cases_province ON cases (province_id);
 CREATE INDEX idx_cases_county ON cases (county_id);
+CREATE INDEX idx_cases_type ON cases (type);
+CREATE INDEX idx_cases_date ON cases (date);
 CREATE TABLE IF NOT EXISTS api_keys (
   id SERIAL PRIMARY KEY,
   api_key VARCHAR NOT NULL UNIQUE
