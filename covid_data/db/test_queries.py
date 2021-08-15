@@ -20,7 +20,7 @@ class TestPlaceExists(TestCase):
         """Place exists should call connect once"""
         mockDb = MockDB()
 
-        mockDb.execute_return = [(0,)]
+        mockDb.execute_return = [{"id": 0}]
 
         mockDb.cursor = MagicMock(return_value=mockDb)
 
@@ -32,7 +32,7 @@ class TestPlaceExists(TestCase):
         """Place exists should call execute once"""
         mockDb = MockDB()
 
-        mockDb.execute = MagicMock(return_value=[(0,)])
+        mockDb.execute = MagicMock(return_value=[{"id": 0}])
 
         place_exists("Test", mockDb)  # type: ignore
 
@@ -42,7 +42,7 @@ class TestPlaceExists(TestCase):
         """Place exists should return id if exists"""
         mockDb = MockDB()
 
-        mockDb.execute_return = (self.mock_id,)
+        mockDb.execute_return = [{"id": self.mock_id}]
 
         res = place_exists("Test", mockDb)  # type: ignore
 
@@ -62,7 +62,7 @@ class TestPlaceExists(TestCase):
 class TestCreateCountry(TestCase):
     mock_id = "TestID"
 
-    execute_return = (mock_id,)
+    execute_return = [{"id": mock_id}]
 
     mock_country = {
         "name": "Test Country",
@@ -107,7 +107,7 @@ class TestCreateCountry(TestCase):
 class TestCreateProvince(TestCase):
     mock_id = "TestID"
 
-    execute_return = (mock_id,)
+    execute_return = [{"id": mock_id}]
 
     mock_province = {
         "name": "Test Province",
@@ -152,7 +152,7 @@ class TestCreateProvince(TestCase):
 class TestCreateCounty(TestCase):
     mock_id = "TestID"
 
-    execute_return = (mock_id,)
+    execute_return = [{"id": mock_id}]
 
     mock_county = {
         "name": "Test County",

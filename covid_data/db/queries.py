@@ -29,7 +29,7 @@ def place_exists(
             (place,),
         )
 
-        result: dict = cur.fetchone()  # type: ignore
+        result: dict = cur.fetchone() or {}  # type: ignore
 
         return result.get("id", None)
 

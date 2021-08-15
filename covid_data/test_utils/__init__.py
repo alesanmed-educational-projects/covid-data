@@ -1,8 +1,5 @@
-from typing import Any
-
-
 class MockDB(object):
-    execute_return: Any = None
+    execute_return: list[dict] = []
 
     def cursor(self, *args, **kwargs):
         return self
@@ -11,7 +8,7 @@ class MockDB(object):
         return self
 
     def fetchone(self, *args, **kwargs):
-        return self.execute_return
+        return self.execute_return[0] if len(self.execute_return) else None
 
     def fetchall(self, *args, **kwargs):
         return self.execute_return
