@@ -1,5 +1,7 @@
 # Data Loader
 
+![Tests](https://github.com/alesanmed-educational-projects/covid-data/actions/workflows/python-app.yml/badge.svg)
+
 Este proyecto contiene las herramientas necesarias para:
 - Crear la base de datos
 - Cargar datos en esa base de datos

@@ -418,6 +418,7 @@ def get_cum_cases_by_date(
 def get_cum_cases_by_date_country(
     engine: connection,
     country_id: int,
+    provinces_id: list[int] = [],
     date: datetime = None,
     date_lte: datetime = None,
     date_gte: datetime = None,
@@ -451,6 +452,10 @@ def get_cum_cases_by_date_country(
     if case_type:
         constraints.append(sql.SQL("type=%s"))
         params.append(case_type.value)
+
+    if len(provinces_id):
+        constraints.append(sql.SQL("province_id IN %s"))
+        params.append(tuple(provinces_id))
 
     constraints.append(sql.SQL("amount > 0"))
 
