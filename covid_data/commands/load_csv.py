@@ -8,19 +8,15 @@ import pandas as pd
 from click.exceptions import ClickException
 
 from covid_data.db import close_db, get_db
-from covid_data.db.queries import (
-    create_case,
-    get_cases_by_country,
-    get_cases_by_province,
-)
-from covid_data.errors import (
-    PlaceInfoFetchException,
-    PlaceInfoNotCompleteException,
-    PlaceNameNotProvidedException,
-    PlaceNotMatchedException,
-)
+from covid_data.db.queries import (create_case, get_cases_by_country,
+                                   get_cases_by_province)
+from covid_data.errors import (PlaceInfoFetchException,
+                               PlaceInfoNotCompleteException,
+                               PlaceNameNotProvidedException,
+                               PlaceNotMatchedException)
 from covid_data.types import CaseType, OnConflictStrategy
-from covid_data.utils.places import CreatedPlace, create_country, create_province
+from covid_data.utils.places import (CreatedPlace, create_country,
+                                     create_province)
 
 logger = getLogger("covid-data")
 
@@ -93,7 +89,7 @@ def insert_data(df: pd.DataFrame, case_type: CaseType, optimize: bool = True) ->
 
             if created_province.province_id and created_country.country_id:
                 saved_cases = get_cases_by_province(
-                    int(created_province.province_id),
+                    [int(created_province.province_id)],
                     engine,
                     case_type,
                 )
