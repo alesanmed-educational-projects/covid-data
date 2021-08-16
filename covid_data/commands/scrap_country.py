@@ -2,9 +2,10 @@ import os
 from contextlib import ExitStack
 from datetime import datetime
 from importlib import import_module
-from typing import Any
+from typing import Any, List
 
 import click
+
 from covid_data.db import close_db, get_db
 
 
@@ -19,10 +20,6 @@ from covid_data.db import close_db, get_db
 def main(country: str, check: bool = False, start_date: str = ""):
     """Scrap cases of chosen COUNTRY. To check available countries to scrap use --check"""
     with ExitStack() as stack:
-        db = get_db()
-
-        stack.push(close_db(db))
-
         base_path = os.path.join(os.path.dirname(__file__), "../scrappers")
         files = os.listdir(base_path)
 
@@ -30,22 +27,31 @@ def main(country: str, check: bool = False, start_date: str = ""):
             click.echo("Available countries are:")
 
         for file_name in files:
-            if file_name.startswith("test"):
-                continue
-
-            handler_module, _ = os.path.splitext(file_name)
-
-            module = import_module(f".{handler_module}", "covid_data.scrappers")
-
-            if not hasattr(module, "scrap"):
+            if (
+                file_name.startswith("test")
+                or file_name.startswith("__")
+                or os.path.isdir(os.path.join(base_path, file_name))
+            ):
                 continue
 
             if check:
                 click.echo(f"\t{file_name.replace('.py', '').capitalize()}")
-            elif handler_module == country.lower():
-                args: list[Any] = [db]
+            else:
+                handler_module, _ = os.path.splitext(file_name)
 
-                if start_date:
-                    args.append(datetime.strptime(start_date, "%d/%m/%Y"))
+                module = import_module(f".{handler_module}", "covid_data.scrappers")
 
-                module.scrap(*args)  # type: ignore
+                if not hasattr(module, "scrap"):
+                    continue
+
+                if handler_module == country.lower():
+                    db = get_db()
+
+                    stack.push(close_db(db))
+
+                    args: List[Any] = [db]
+
+                    if start_date:
+                        args.append(datetime.strptime(start_date, "%d/%m/%Y"))
+
+                    module.scrap(*args)  # type: ignore

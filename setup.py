@@ -18,7 +18,7 @@ setup(
     name="covid_data",
     entry_points={
         "console_scripts": [
-            "covid_data = covid_data:covid_data",
+            "covid-data = covid_data:script_entrypoint",
         ],
     },
     packages=find_packages(),

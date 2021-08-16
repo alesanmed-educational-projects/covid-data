@@ -64,8 +64,8 @@ def get_place_by_property(
 
 
 def get_countries_id_by_alpha2(
-    alpha2_codes: list[str], engine: connection
-) -> list[int]:
+    alpha2_codes: List[str], engine: connection
+) -> List[int]:
     with engine.cursor() as cur:
         cur: cursor
 
@@ -206,21 +206,21 @@ def get_cases_by_country(
 
 
 def get_cases_by_province(
-    provinces_id: list[int], engine: connection, case_type: CaseType = None
+    provinces_id: List[int], engine: connection, case_type: CaseType = None
 ) -> List[Dict]:
     return get_cases_by_filters(engine, provinces_id=provinces_id, case_type=case_type)
 
 
 def get_cases_by_filters_query(
-    countries_id: list[int] = None,
-    provinces_id: list[int] = None,
+    countries_id: List[int] = None,
+    provinces_id: List[int] = None,
     date: datetime = None,
     date_lte: datetime = None,
     date_gte: datetime = None,
     case_type: CaseType = None,
-    aggregation: list[Aggregations] = [],
+    aggregation: List[Aggregations] = [],
     limit: int = None,
-    sort: list[str] = [],
+    sort: List[str] = [],
 ) -> Dict[str, Any]:
     params = []
     constraints = []
@@ -315,13 +315,13 @@ def get_cases_by_filters_query(
 
 def get_cases_by_filters(
     engine: connection,
-    countries_id: list[int] = None,
-    provinces_id: list[int] = None,
+    countries_id: List[int] = None,
+    provinces_id: List[int] = None,
     date: datetime = None,
     date_lte: datetime = None,
     date_gte: datetime = None,
     case_type: CaseType = None,
-    aggregation: list[Aggregations] = [],
+    aggregation: List[Aggregations] = [],
     limit: int = None,
     sort: list = [],
 ) -> List[Dict]:
@@ -354,7 +354,7 @@ def get_cum_cases_by_date(
     date_lte: datetime = None,
     date_gte: datetime = None,
     case_type: CaseType = None,
-    countries: list[int] = None,
+    countries: List[int] = None,
 ) -> List[Dict]:
     params = []
 
@@ -418,13 +418,13 @@ def get_cum_cases_by_date(
 def get_cum_cases_by_date_country(
     engine: connection,
     country_id: int,
-    provinces_id: list[int] = [],
+    provinces_id: List[int] = [],
     date: datetime = None,
     date_lte: datetime = None,
     date_gte: datetime = None,
     case_type: CaseType = None,
 ) -> List[Dict]:
-    params: list[Any] = [country_id]
+    params: List[Any] = [country_id]
 
     inner_query = sql.SQL(
         (
@@ -490,7 +490,7 @@ def get_cum_cases_by_country(
     date_lte: datetime = None,
     date_gte: datetime = None,
     case_type: CaseType = None,
-    countries_id: list[int] = [],
+    countries_id: List[int] = [],
 ) -> List[Dict]:
     params = []
 
@@ -557,9 +557,9 @@ def get_cum_cases_by_province(
     date_gte: datetime = None,
     case_type: CaseType = None,
     country_id: int = None,
-    provinces_id: list[str] = None,
+    provinces_id: List[str] = None,
 ) -> List[Dict]:
-    params: list[Any] = [country_id]
+    params: List[Any] = [country_id]
 
     inner_query = sql.SQL(
         (
@@ -650,8 +650,8 @@ def create_case(
 
 
 def get_all_countries(
-    engine: connection, name: str = None, near: list[float] = []
-) -> list[dict]:
+    engine: connection, name: str = None, near: List[float] = []
+) -> List[dict]:
     with engine.cursor() as cur:
         cur: cursor
 
@@ -675,7 +675,7 @@ def get_all_countries(
         return cur.fetchall()  # type: ignore
 
 
-def get_all_provinces(engine: connection) -> list[dict]:
+def get_all_provinces(engine: connection) -> List[dict]:
     with engine.cursor() as cur:
         cur: cursor
 
@@ -695,7 +695,7 @@ def get_all_provinces(engine: connection) -> list[dict]:
         return cur.fetchall()  # type: ignore
 
 
-def get_provinces_by_country(engine: connection, country_id: int) -> list[dict]:
+def get_provinces_by_country(engine: connection, country_id: int) -> List[dict]:
     with engine.cursor() as cur:
         cur: cursor
 

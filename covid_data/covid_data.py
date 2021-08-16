@@ -17,7 +17,7 @@ def cli():
     pass
 
 
-if __name__ == "__main__":
+def entrypoint():
     base_path = os.path.join(os.path.dirname(__file__), "commands")
     files = os.listdir(base_path)
 
@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
         handler_module, _ = os.path.splitext(file_name)
 
-        module = import_module(f".{handler_module}", "commands")
+        module = import_module(f".{handler_module}", "covid_data.commands")
 
         if not hasattr(module, "main"):
             continue

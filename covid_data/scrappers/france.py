@@ -1,7 +1,6 @@
 import datetime
 import json
 import logging
-import os
 
 import click
 import requests
@@ -48,11 +47,9 @@ def scrap(engine: connection, start_date: datetime.datetime = START_DATE) -> Non
         if response.status_code > 399:
             message = f"Error fetching data for date {curr_date}"
             logger.error(message)
-            click.echo(message)
             logger.error(response)
-            click.echo(response)
 
-            raise ClickException(message)
+            continue
 
         data = json.loads(response.text)
 
