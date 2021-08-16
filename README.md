@@ -1,6 +1,6 @@
 # Data Loader
 
-[![forthebadge made-with-python](https://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
+[![forthebadge made-with-python](https://raw.githubusercontent.com/alesanmed-educational-projects/covid-data/main/assets/img/made-with-python.svg)](https://www.python.org/)
 
 ![Tests](https://github.com/alesanmed-educational-projects/covid-data/actions/workflows/python-app.yml/badge.svg)
 ![Build](https://github.com/alesanmed-educational-projects/covid-data/actions/workflows/pypi-publish.yml/badge.svg)
