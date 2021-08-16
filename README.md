@@ -1,6 +1,13 @@
 # Data Loader
 
+[![forthebadge made-with-python](https://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
+
+
 ![Tests](https://github.com/alesanmed-educational-projects/covid-data/actions/workflows/python-app.yml/badge.svg)
+![Build](https://github.com/alesanmed-educational-projects/covid-data/actions/workflows/pypi-publish.yml/badge.svg)
+[![PyPI version](https://badge.fury.io/py/covid-data.svg)](https://badge.fury.io/py/covid-data)
+
+
 
 Este proyecto contiene las herramientas necesarias para:
 - Crear la base de datos
