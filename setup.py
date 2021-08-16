@@ -3,7 +3,12 @@ from setuptools import find_packages, setup
 with open("README.md", "r", encoding="utf-8") as fp:
     long_description = fp.read()
 
-__version__ = "0.1.16"
+with open("requirements.txt", "r", encoding="utf-8") as fp:
+    requirements = [
+        requirement.split(";")[0] for requirement in fp.read().strip().split("\n")
+    ]
+
+__version__ = "0.1.17"
 
 download_url = "https://github.com/alesanmed-educational-projects/covid-data/archive/refs/tags/{}.tar.gz".format(
     __version__
@@ -27,14 +32,7 @@ setup(
     url="https://github.com/alesanmed-educational-projects/covid-data",
     download_url=download_url,
     keywords=["covid", "core"],
-    install_requires=[
-        "pandas",
-        "beautifulsoup4",
-        "click",
-        "requests",
-        "psycopg2",
-        "Unidecode",
-    ],
+    install_requires=requirements,
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
