@@ -22,7 +22,11 @@ def entrypoint():
     files = os.listdir(base_path)
 
     for file_name in files:
-        if file_name.startswith("test"):
+        if (
+            file_name.startswith("test")
+            or file_name.startswith("__")
+            or os.path.isdir(os.path.join(base_path, file_name))
+        ):
             continue
 
         handler_module, _ = os.path.splitext(file_name)
