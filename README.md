@@ -5,7 +5,7 @@
 
 ![Tests](https://github.com/alesanmed-educational-projects/covid-data/actions/workflows/python-app.yml/badge.svg)
 ![Build](https://github.com/alesanmed-educational-projects/covid-data/actions/workflows/pypi-publish.yml/badge.svg)
-[![PyPI version](https://badge.fury.io/py/covid-data.svg)](https://badge.fury.io/py/covid-data)
+[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6e&v=0.1.18)](https://badge.fury.io/py/covid-data)
 
 
 

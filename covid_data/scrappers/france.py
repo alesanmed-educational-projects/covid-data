@@ -4,7 +4,6 @@ import logging
 
 import click
 import requests
-from click.exceptions import ClickException
 from psycopg2._psycopg import connection  # pylint: disable=no-name-in-module
 
 from covid_data.db import close_db, get_db
