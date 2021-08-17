@@ -8,7 +8,7 @@ with open("requirements.txt", "r", encoding="utf-8") as fp:
         requirement.split(";")[0] for requirement in fp.read().strip().split("\n")
     ]
 
-__version__ = "0.1.20"
+__version__ = "0.1.21"
 
 download_url = "https://github.com/alesanmed-educational-projects/covid-data/archive/refs/tags/{}.tar.gz".format(
     __version__
