@@ -1,4 +1,4 @@
-# Data Loader
+# COVID Data Loader
 
 [![forthebadge made-with-python](https://raw.githubusercontent.com/alesanmed-educational-projects/covid-data/main/assets/img/made-with-python.svg)](https://www.python.org/)
 
@@ -7,32 +7,32 @@
 [![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6e&v=0.1.18)](https://badge.fury.io/py/covid-data)
 
 
-Este proyecto contiene las herramientas necesarias para:
-- Crear la base de datos
-- Cargar datos en esa base de datos
-- Consultar esos datos
+This project is part of the [Core Data COVID](https://github.com/alesanmed-educational-projects/core-data-covid-project) project. Here are the tools needed for:
+- Create the database
+- Populate the database
+- Query the data
 
 # Table of contents
 
-- [Instalación 📥](#instalacion)
-  - [Biblioteca 📖](#biblioteca)
-  - [CLI 🤖](#cli)
-- [Configuración ⚙](#configuracion)
-- [Uso como CLI 🎛️](#uso-como-cli)
+- [Installation 📥](#installation)
+  - [Library 📖](#library)
+  - [CLI 🤖](#tio)
+- [Configuration ⚙](#configuration)
+- [Usage as CLI 🎛️](#use-as-cli)
   - [loadcsv](#loadcsv)
   - [scrap](#scrap)
-  - [Cargar la base de datos desde un backup](#cargar-la-base-de-datos-desde-un-backup)
-- [Contribuir ♥](#contribuir)
-  - [Añadir nuevos scrappers](#añadir-nuevos-scrappers)
-  - [Añadir nuevos comandos](#añadir-nuevos-comandos)
-- [Como biblioteca](#como-biblioteca)
+  - [Populate DB from backup](#populate-from-backup)
+- [Contributing ♥](#contribuir)
+  - [Add new scrappers](#add-scrappers)
+  - [Add new commands](#add-commands)
+- [As library](#as-library)
 - [License](#license)
 
-## Instalación 📥 <a name="instalacion"></a>
+## Installation 📥 <a name="installation"></a>
 
-### Biblioteca 📖  <a name="biblioteca"></a>
+### Library 📖  <a name="library"></a>
 
-Para usarlo como biblioteca basta con instalarlo con `pip`
+To use this project as a library, you have to install it with `pip`:
 
 ```
 pip install covid-data
@@ -40,63 +40,60 @@ pip install covid-data
 
 ### CLI 🤖 <a name="cli"></a>
 
-Para usarlo como CLI, sigue siendo necesario instalarlo con `pip` y, una vez instalado, será suficiente con ejecutarlo desde una consola.
+To use it as CLI, you still have to install it with `pip`. After that, you can run the commands from a terminal:
 
 ```
-covid_data --help
+covid-data --help
 ```
 
-## Configuración ⚙ <a name="configuracion"></a>
+## Configuration ⚙ <a name="configuration"></a>
 
-Este proyecto se vale de las siguientes variables de entorno para su configuración:
+The project looks for the following environment variables to configure several parts:
 
-```
-POSTGRES_USER: Usuario de Postgres
-POSTGRES_PASS: Contraseña de Postgres
-POSTGRES_HOST: Host donde se encuentra Postgres
-POSTGRES_PORT: Puerto para acceder a Postgres
-POSTGRES_DB:   Base de datos a la que conectarse
-CAGEDATA_API_KEY: Clave api de OpenCageData
-```
+- POSTGRES_USER: Postgres username
+- POSTGRES_PASS: Postgres password
+- POSTGRES_HOST: Postgres host
+- POSTGRES_PORT: Postgres port
+- POSTGRES_DB: Postgres database
+- CAGEDATA_API_KEY: OpenCageData API Key
 
-La clave API de OpenCageData se puede crear desde su [web](https://opencagedata.com/) y se usa para enriquecer y normalizar localizaciones.
+You can create the OpenCage data ley from their [website](https://opencagedata.com/). The package uses it to enrich and normalize places.
 
-## Uso como CLI 🎛️ <a name="uso-como-cli"></a>
+## Usage as CLI 🎛️ <a name="use-as-cli"></a>
 
-Para cargar los datos se pueden usar los comandos expuestos por la librería.
+To populate the database, you may use the commands the library provides.
 
-Lo primero será crear la base de datos con el esquema disponible [aquí](covid_data/db/schema/db_schema.sql). La estructura de la base de datos es la siguiente:
+The first step is to create the database with the schema available [here](covid_data/db/schema/db_schema.sql). The database structure is the following one:
 
 ![Database ERD](https://github.com/alesanmed-educational-projects/covid-data/raw/main/assets/img/erd-covid.png)
 
-Una vez está creada la base de datos, se pueden cargar los datos de los archivos CSV con el siguiente comando:
+Once the package finishes creating the database, you can populate it from a CSV with the command:
 
 ```bash
-covid_data loadcsv /path/to/confirmed.csv,/path/to/dead.csv,/path/to/recovered.csv -tf -o
+❯ covid-data loadcsv /path/to/confirmed.csv,/path/to/dead.csv,/path/to/recovered.csv -tf -o
 ```
 
-Para obtener ayuda sobre cómo usar el comando, ejecuta:
+For getting help on how to use the command, run:
 
 ```bash
-❯ covid_data --help
-Usage: app.py [OPTIONS] COMMAND [ARGS]...
+❯ covid-data --help
+Usage: covid-data [OPTIONS] COMMAND [ARGS]...
 
 Options:
   --help  Show this message and exit.
 
 Commands:
-  loadcsv  Loads FILES as CSV data.
+  loads    Loads FILES as CSV data.
   scrap    Scrap cases of chosen COUNTRY.
 ```
 
 ### loadcsv <a name="loadcsv"></a>
 
 ```bash
-❯ covid_data loadcsv --help
-Usage: app.py loadcsv [OPTIONS] FILES
+❯ covid-data loadcsv --help
+Usage: covid-data loadcsv [OPTIONS] FILES
 
-  Loads FILES as CSV data. If you want to load several files, each file should
-  be separated by comma
+  Loads FILES as CSV data. If you want to load several files, each file should be separated by a comma
 
 Options:
   -t, --type TEXT      Type of cases contained in each file, separated by
@@ -108,94 +105,96 @@ Options:
   --help               Show this message and exit.
 ```
 
-Este comando te permite procesar y cargar en la base de datos uno o más archivos CSV. Cada archivo debe contener información de un solo tipo de casos.
+This command allows you to populate the database with one or more CSV files. Each file may only contain one case type.
 
-Las rutas a los archivos deben ir separados por comas.
+You have to provide the paths separated by commas.
 
-De igual manera, el tipo de caso de cada archivo debe ir separados por comas en el argumento `--type` y **en el mismo orden** que los archivos.
+As well as with the file names, each file case type has to be separated by commas. Pass the type list under the argument `--type` and **in the same order** as the files.
 
-Otra opción es no usar el argumento `--type` y nombrar los archivos con el tipo de caso que contienten, e.g. `recovered.csv`. Si se toma esta alternativa, se debe usar el parámetro `--type-in-file`.
+Another option is not using the `--type` argument. In that case, you have to name the files according to the case type each of them contains (e.g., `recovered.csv`). If you choose this alternative, you have to set the flag `--type-in-file`.
 
-Por último, el argumento `--optimize` se saltará todas las filas en las que el país al que hacen referencia ya tenga el mismo (o más) número de casos del tipo del archivo, que columnas tiene el CSV.
+The last flag is `--optimize`. If set, for each row, the CLI is going to get the country from that row. Then check the number of cases already saved for that country (with the same type as the file). If the country has the same or more number of cases as columns are in the CSV, it will skip that row.
 
-Un ejemplo de uso de este comando para cargar los CSVs con todos los datos es:
+An example of how to run the command for loading all CSVs:
 
 ```bash
-covid_data loadcsv /path/to/confirmed.csv,/path/to/dead.csv,/path/to/recovered.csv -tf -o
+❯ covid-data loadcsv /path/to/confirmed.csv,/path/to/dead.csv,/path/to/recovered.csv -tf -o
 ```
 
-Usa el nombre del archivo para nombrar el tipo de caso y la optimización.
+In that example, I'm using the file name to specify the case type contained. I'm also setting the optimization flag.
 
 ### scrap <a name="scrap"></a>
 
-Este comando permite hacer scrapping de un país concreto. Se usa para ampliar datos por país.
+With this command, you can scrap the cases of a specific country, allowing you to extend the data from that country.
 
-El uso de este comando se detalla aquí:
+The command usage is as follows:
 
 ```bash
-Usage: app.py scrap [OPTIONS] COUNTRY
+❯ covid-data scrap --help
+Usage: covid-data scrap [OPTIONS] COUNTRY
 
   Scrap cases of chosen COUNTRY. To check available countries to scrap use
   --check
 
 Options:
-  --check            Use this to check available countries
+  --check to Use this to check available countries
   --start-date TEXT  Date to start scraping cases from, in format DD/MM/YYYY
   --help             Show this message and exit.
 ``` 
 
-Hay un argumento que es obligatorio y es el país a scrappear. Si se quiere saber qué países hay disponibles, basta con poner cualquier valor en `COUNTRY` y pasar el parámetro `--check`:
+There is one required argument, the country to scrap. If you want to know which countries are available, you can pass whatever value to `COUNTRY` and set the flag `--check`:
 
 ```bash
-❯ covid_data scrap XXX --check
+❯ covid-data scrap XXX --check
 Available countries are:
         France
         Spain
 ```
 
-Y, una vez se sabe qué país se va a usar, se lanza el scrapper:
+Once you know which country to scrap, you can launch the command:
 
 ```bash
-❯ covid_data scrap spain
+❯ covid-data scrap Spain
 Fetching cases for province 1/20
 Fetching cases for province 2/20
 Fetching cases for province 3/20
 ...
 ```
 
-Se puede especificar la fecha de inicio usando el argumento `--start-date`. La fecha debe estar en formato `DD/MM/YYYY`
+You can set the start date with the argument `--start-date`. The date format required is `DD/MM/YYYY`
 
 ```bash
-covid_data scrap France --start-date 01/08/2021
+❯ covid-data scrap France --start-date 01/08/2021
 ```
 
-### Cargar la base de datos desde un backup <a name="cargar-la-base-de-datos-desde-un-backup"></a>
+### Populate DB from backup <a name="populate-from-backup"></a>
 
-En cada [release](https://github.com/alesanmed-educational-projects/covid-data/releases) se adjunta un archivo `covid-data.sql` con el que se pueden cargar los datos más recientes, hasta el momento de crear esa release.
+You may find attached to each [release](https://github.com/alesanmed-educational-projects/covid-data/releases), a `covid-data.sql` file. That script allows you to load into an SQL database the most recent data.
 
-Ejecutando ese archivo sobre la base de datos `covid-data` vacía, se rellenará con todos los datos necesarios para la ejecución.
+If you run that script on the `covid-data` database, it will populate it with the necessary data for running the app.
 
 
-## Contribuir ♥ <a name="contribuir"></a>
+## Contributing ♥ <a name="contributing"></a>
 
-A este proyecto se puede contribuir con mejoras, añadiendo nuevos comandos o añadiendo nuevos scrappers.
+You can become part of this project by proposing (and even implementing) enhancements, new commands, or new scrappers.
 
-### Añadir nuevos scrappers <a name="añadir-nuevos-scrappers"></a>
+### Add new scrappers <a name="add-scrappers"></a>
 
-Añadir un nuevo scrapper para un país es tan sencillo como colocar un archivo `<country_name>.py` en la carpeta `covid_data/scrappers` y que ese archivo exponga una función:
+Adding a new scrapper is as simple as creating a new file named `<country_name>.py` in the folder `covid_data/scrappers` and make that file expose a function with the following signature:
 
 ```python
 def scrap(db_engine: psycopg2._psycopg.connection, start_date: datetime.datetime)
 ```
 
-### Añadir nuevos comandos <a name="añadir-nuevos-comandos"></a>
+That function has to be in charge of scrapping, processing, formatting as well as saving new cases for the requested country.
+### Add new commands <a name="add-commands"></a>
 
-Añadir un nuevo comando implica colocar un archivo `<command_name>.py` en la carpeta `covid_data/commands` y que ese archivo exponga una función `main` con todos los decoradores de [click](https://click.palletsprojects.com/en/8.0.x/) necesarios.
+Adding a new command is also a simple process. Place a file named `<command_name>.py` in the folder `covid_data/commands` and expose a function `main` with the needed [click](https://click.palletsprojects.com/en/8.0.x/) decorators.
 
-Un decorador obligatorio es `@click.command("command_name")`, pues si no se pone, el comando será `main`.
-## Como biblioteca <a name="como-biblioteca"></a>
+A mandatory decorator is `@click.command("command-name")`, to avoid overwriting commands as all functions are named `main`.
+## As library <a name="as-library"></a>
 
-La parte más interesante de este paquete como biblioteca es el sumbódulo `db`, que se detalla en el archivo [CODE](CODE.md).
+The potential of this library is offered by the `db` submodule, which you can find on [CODE](CODE.md).
 
 ## License <a name="license"></a>
 
