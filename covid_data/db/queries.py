@@ -491,12 +491,13 @@ def get_cum_cases_by_country(
     date_gte: datetime = None,
     case_type: CaseType = None,
     countries_id: List[int] = [],
+    limit: int = None,
 ) -> List[Dict]:
     params = []
 
-    inner_query = sql.SQL(
+    query = sql.SQL(
         (
-            "SELECT co.name as country, sum(c.amount) as amount, c.date as date "
+            "SELECT co.name as country, sum(c.amount) as amount "
             "FROM cases c INNER JOIN countries co ON c.country_id = co.id "
         )
     )
@@ -525,27 +526,18 @@ def get_cum_cases_by_country(
 
     constraints.append(sql.SQL("amount > 0"))
 
-    inner_query += sql.SQL(" WHERE ") + sql.SQL(" AND ").join(constraints)
+    query += sql.SQL(" WHERE ") + sql.SQL(" AND ").join(constraints)
 
-    inner_query += sql.SQL(("GROUP BY c.date, co.name"))
+    query += sql.SQL("GROUP BY co.name ORDER BY amount DESC")
 
-    outter_query = (
-        sql.SQL(
-            (
-                "SELECT "
-                "country, "
-                "sum(amount) OVER (PARTITION BY country ORDER BY date ASC) as amount, "
-                "date FROM ( "
-            )
-        )
-        + inner_query
-        + sql.SQL((") as _ ORDER BY date ASC"))
-    )
+    if limit:
+        query += sql.SQL(" LIMIT %s")
+        params.append(limit)
 
     with engine.cursor() as cur:
         cur: cursor
 
-        cur.execute(outter_query, tuple(params))
+        cur.execute(query, tuple(params))
 
         return cur.fetchall()  # type: ignore
 
@@ -561,9 +553,9 @@ def get_cum_cases_by_province(
 ) -> List[Dict]:
     params: List[Any] = [country_id]
 
-    inner_query = sql.SQL(
+    query = sql.SQL(
         (
-            "SELECT sum(c.amount) as amount, c.date as date, c.type, p.name as province "
+            "SELECT sum(c.amount) as amount, p.name as province "
             "FROM cases c INNER JOIN provinces p ON c.province_id = p.id "
             "WHERE c.country_id=%s "
         )
@@ -593,27 +585,14 @@ def get_cum_cases_by_province(
         constraints.append(sql.SQL("c.province_id IN %s"))
         params.append(tuple(provinces_id))
 
-    inner_query += sql.SQL("AND ") + sql.SQL(" AND ").join(constraints)
+    query += sql.SQL("AND ") + sql.SQL(" AND ").join(constraints)
 
-    inner_query += sql.SQL((" GROUP BY c.date, c.type, province"))
-
-    outter_query = (
-        sql.SQL(
-            (
-                "SELECT "
-                "type, "
-                "sum(amount) OVER (PARTITION BY province ORDER BY date ASC) as amount, "
-                "province, date FROM ( "
-            )
-        )
-        + inner_query
-        + sql.SQL((") as _ ORDER BY date ASC"))
-    )
+    query += sql.SQL((" GROUP BY province ORDER BY amount DESC"))
 
     with engine.cursor() as cur:
         cur: cursor
 
-        cur.execute(outter_query, tuple(params))
+        cur.execute(query, tuple(params))
 
         return cur.fetchall()  # type: ignore
 
